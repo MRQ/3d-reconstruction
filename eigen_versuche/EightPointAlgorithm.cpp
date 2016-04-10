@@ -51,7 +51,7 @@ NormalizeInput(const Eigen::MatrixXd& matches)
 	input_scaling.block<2, 2>(0, 0) = scale.asDiagonal();
 	input_scaling.block<2, 1>(0, 2) = -mean * scale.asDiagonal();
 	input_scaling.block<1, 2>(2, 0).setZero();
-	input_scaling(2, 2) = 0;
+	input_scaling(2, 2) = 1;
 	std::cout << "\n-- normalized: --\n" << normalized << "\n-- input_scaling --\n";
 	std::cout << "\n----\n" << input_scaling << "\n----\n";
 
@@ -65,24 +65,24 @@ Eigen::Matrix<double, 3, 3> EightPointAlgorithm(const Eigen::MatrixXd& matches)
 	using namespace Eigen;
 
 	Matrix<double, Dynamic, 4> normalized;
-	Matrix<double, 3, 3> normalize;
+	Matrix<double, 3, 3> input_scaling;
 
-	std::tie(normalized, normalize) = NormalizeInput(matches);
+	std::tie(normalized, input_scaling) = NormalizeInput(matches);
 
-	Matrix<double, Dynamic, 9> A(matches.rows() +1, 9);
-	for(size_t row = 0; row < matches.rows(); row++) {
-		A(row, 0) = matches(row, 2) * matches(row, 0); // u' * u
-		A(row, 1) = matches(row, 2) * matches(row, 1); // u' * v
-		A(row, 2) = matches(row, 2);                   // u'
-		A(row, 3) = matches(row, 3) * matches(row, 0); // v' * u
-		A(row, 4) = matches(row, 3) * matches(row, 1); // v' * v
-		A(row, 5) = matches(row, 3);                   // v'
-		A(row, 6) =                   matches(row, 0); // u
-		A(row, 7) =                   matches(row, 1); // v
+	Matrix<double, Dynamic, 9> A(normalized.rows() +1, 9);
+	for(size_t row = 0; row < normalized.rows(); row++) {
+		A(row, 0) = normalized(row, 2) * normalized(row, 0); // u' * u
+		A(row, 1) = normalized(row, 2) * normalized(row, 1); // u' * v
+		A(row, 2) = normalized(row, 2);                   // u'
+		A(row, 3) = normalized(row, 3) * normalized(row, 0); // v' * u
+		A(row, 4) = normalized(row, 3) * normalized(row, 1); // v' * v
+		A(row, 5) = normalized(row, 3);                   // v'
+		A(row, 6) =                     normalized(row, 0); // u
+		A(row, 7) =                     normalized(row, 1); // v
 		A(row, 8) = 1.0;
 	}
-	A.block<1, 8>(matches.rows(), 0).setZero();
-	A(matches.rows(), 8) = 1;
+	A.block<1, 8>(normalized.rows(), 0).setZero();
+	A(normalized.rows(), 8) = 1;
 
 	// Initialise solver.
 	const JacobiSVD<Matrix<double, Dynamic, 9> >
@@ -106,5 +106,7 @@ Eigen::Matrix<double, 3, 3> EightPointAlgorithm(const Eigen::MatrixXd& matches)
 
 	// invert Scale
 
-	return normalize.transpose() * result * normalize;
+	std::cout << " --result --\n" << result << "\n ---\n";
+
+	return input_scaling.transpose() * result * input_scaling;
 };

@@ -3,6 +3,7 @@
 // public libraries used throu out the project.
 
 #include <iostream>
+#include <fstream>
 #include <tuple>
 #include <Eigen/Dense>
 

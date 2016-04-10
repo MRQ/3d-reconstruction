@@ -19,10 +19,9 @@ const double handmade_points[NUM_POINTS][4] = {
 
 int main (void) {
 	Eigen::MatrixXd points = Eigen::MatrixXd(NUM_POINTS, 4);
-	const double scale = 0.001;
 	for (int row = 0; row < NUM_POINTS; row++ ) {
 		for (int col = 0; col < 4; col++) {
-			points(row, col) = handmade_points[row][col] * scale;
+			points(row, col) = handmade_points[row][col];
 		}
 	}
 	auto projection = EightPointAlgorithm(points);

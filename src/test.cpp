@@ -1,3 +1,4 @@
+#include "libs.h"
 #include <iostream>
 #include <Eigen/Dense>
 
@@ -27,4 +28,17 @@ int main (void) {
 	auto projection = EightPointAlgorithm(points);
 	std::cout << "Here are the points:" << std::endl << points<< std::endl;
 	std::cout << "Here is the projection F:" << std::endl << projection << std::endl;
+	std::cout << "Input errors:";
+
+	for (int row = 0; row < NUM_POINTS; row++ ) {
+		Eigen::Matrix<double, 3, 1> left, right;
+		left(0) = points(row, 0);
+		left(1) = points(row, 1);
+		left(2) = 1;
+		right(0) = points(row, 2);
+		right(1) = points(row, 3);
+		right(2) = 1;
+		std::cout << (right.transpose() * projection * left) << ", ";
+	}
+	std::cout << "\n";
 }
